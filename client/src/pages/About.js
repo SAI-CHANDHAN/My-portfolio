@@ -117,6 +117,10 @@ const About = () => {
           {/* Skills Section */}
           <div className="bg-white rounded-lg shadow-lg p-8 mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Technical Skills</h2>
+            <div className="flex-shrink-0 w-4 h-4 bg-blue-600 rounded-full mt-2"></div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900">MERN</h3>
+                </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {skills.map((skill) => (
                 <div key={skill._id} className="text-center">
@@ -152,7 +156,7 @@ const About = () => {
                 <h3 className="text-xl font-semibold text-gray-900">Relevant Certifications</h3>
                 <ul className="text-gray-700 mt-2 space-y-1">
                   <li>• AWS Certified Cloud Practioner</li>
-                  <li>• MongoDB Certified Database Administrator</li>
+                  <li>• Oracle Certified Generative AI Professional</li>
                   <li>• Salesforce Certified AI Associate</li>
                 </ul>
               </div>

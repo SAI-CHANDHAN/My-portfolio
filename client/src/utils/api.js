@@ -5,167 +5,124 @@ class ApiService {
     this.baseURL = API_URL;
   }
 
-  getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` })
-    };
-  }
-
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(localStorage.getItem('token') && {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }),
+      ...options.headers
+    };
+
     const config = {
-      headers: this.getAuthHeaders(),
+      method: options.method || 'GET',
+      headers,
       ...options,
-      headers: {
-        ...this.getAuthHeaders(),
-        ...options.headers
-      }
+      body: options.body ? JSON.stringify(options.body) : undefined
     };
 
     try {
       const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
+      const data = await response.json();
 
-      return await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+      return data;
     } catch (error) {
       console.error('API request failed:', error);
       throw error;
     }
   }
 
-  // GET request
-  async get(endpoint) {
-    return this.request(endpoint);
-  }
-
-  // POST request
-  async post(endpoint, data) {
-    return this.request(endpoint, {
+  // Auth methods
+  async login(credentials) {
+    return this.request('/auth/login', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: credentials
     });
   }
 
-  // PUT request
-  async put(endpoint, data) {
-    return this.request(endpoint, {
+  async getCurrentUser() {
+    return this.request('/auth/me');
+  }
+
+  // Contact methods
+  async submitContact(contactData) {
+    return this.request('/contact', {
+      method: 'POST',
+      body: contactData
+    });
+  }
+
+  async getContacts(page = 1, limit = 10) {
+    return this.request(`/contact?page=${page}&limit=${limit}`);
+  }
+
+  async updateContactStatus(id, status) {
+    return this.request(`/contact/${id}`, {
+      method: 'PATCH',
+      body: { status }
+    });
+  }
+
+  // Project methods
+  async getProjects() {
+    return this.request('/projects');
+  }
+
+  async getAdminProjects() {
+    return this.request('/projects/admin/all');
+  }
+
+  async createProject(projectData) {
+    return this.request('/projects', {
+      method: 'POST',
+      body: projectData
+    });
+  }
+
+  async updateProject(id, projectData) {
+    return this.request(`/projects/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data)
+      body: projectData
     });
   }
 
-  // DELETE request
-  async delete(endpoint) {
-    return this.request(endpoint, {
+  async deleteProject(id) {
+    return this.request(`/projects/${id}`, {
       method: 'DELETE'
     });
   }
 
-  // File upload
-  async upload(endpoint, formData) {
-    const token = localStorage.getItem('token');
-    const headers = {};
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
+  // Skills methods
+  async getSkills() {
+    return this.request('/skills');
+  }
 
-    return this.request(endpoint, {
+  async getAdminSkills() {
+    return this.request('/skills/admin/all');
+  }
+
+  async createSkill(skillData) {
+    return this.request('/skills', {
       method: 'POST',
-      headers,
-      body: formData
+      body: skillData
     });
   }
 
-  // Auth specific methods
-  async login(credentials) {
-    const response = await this.post('/auth/login', credentials);
-    if (response.token) {
-      localStorage.setItem('token', response.token);
-    }
-    return response;
-  }
-
-  async logout() {
-    localStorage.removeItem('token');
-  }
-
-  // Projects
-  async getProjects() {
-    return this.get('/projects');
-  }
-
-  async getProject(id) {
-    return this.get(`/projects/${id}`);
-  }
-
-  async createProject(data) {
-    return this.post('/projects', data);
-  }
-
-  async updateProject(id, data) {
-    return this.put(`/projects/${id}`, data);
-  }
-
-  async deleteProject(id) {
-    return this.delete(`/projects/${id}`);
-  }
-
-  // Blog
-  async getBlogs() {
-    return this.get('/blog');
-  }
-
-  async getBlog(id) {
-    return this.get(`/blog/${id}`);
-  }
-
-  async createBlog(data) {
-    return this.post('/blog', data);
-  }
-
-  async updateBlog(id, data) {
-    return this.put(`/blog/${id}`, data);
-  }
-
-  async deleteBlog(id) {
-    return this.delete(`/blog/${id}`);
-  }
-
-  // Skills
-  async getSkills() {
-    return this.get('/skills');
-  }
-
-  async createSkill(data) {
-    return this.post('/skills', data);
-  }
-
-  async updateSkill(id, data) {
-    return this.put(`/skills/${id}`, data);
+  async updateSkill(id, skillData) {
+    return this.request(`/skills/${id}`, {
+      method: 'PUT',
+      body: skillData
+    });
   }
 
   async deleteSkill(id) {
-    return this.delete(`/skills/${id}`);
-  }
-
-  // Contact
-  async submitContact(data) {
-    return this.post('/contact', data);
-  }
-
-  async getContacts() {
-    return this.get('/contact');
-  }
-
-  // Analytics
-  async getAnalytics() {
-    return this.get('/analytics');
+    return this.request(`/skills/${id}`, {
+      method: 'DELETE'
+    });
   }
 }
 

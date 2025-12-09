@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useApi } from '../hooks/useApi';
+import apiService from '../utils/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SEO from '../components/common/SEO';
 
@@ -9,18 +9,22 @@ const Projects = () => {
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
-  const { apiCall } = useApi();
 
   const categories = ['all', 'web', 'mobile', 'fullstack', 'frontend', 'backend'];
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await apiCall('/api/projects', 'GET');
-        setProjects(response.data);
-        setFilteredProjects(response.data);
+        const response = await apiService.getProjects();
+        // Handle both response formats from your API
+        const projectsData = response.projects || response;
+        const validProjects = Array.isArray(projectsData) ? projectsData : [];
+        setProjects(validProjects);
+        setFilteredProjects(validProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
+        setProjects([]);
+        setFilteredProjects([]);
       } finally {
         setLoading(false);
       }
@@ -93,9 +97,12 @@ const Projects = () => {
               >
                 <div className="relative group">
                   <img
-                    src={project.image || '/api/placeholder/400/250'}
+                    src={project.images?.[0] || '/api/placeholder/400/250'}
                     alt={project.title}
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.src = '/api/placeholder/400/250';
+                    }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-300 flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 space-x-4">
@@ -128,7 +135,7 @@ const Projects = () => {
                     <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-medium capitalize">
                       {project.category || 'Web'}
                     </span>
-                    {project.featured && (
+                    {project.isFeatured && (
                       <span className="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm font-medium">
                         Featured
                       </span>
@@ -140,7 +147,7 @@ const Projects = () => {
                   </h3>
                   
                   <p className="text-gray-600 mb-4 line-clamp-3">
-                    {project.description}
+                    {project.shortDescription || project.description}
                   </p>
                   
                   {/* Technologies */}
@@ -203,36 +210,51 @@ const Projects = () => {
           </div>
 
           {/* No Projects Message */}
-          {filteredProjects.length === 0 && (
+          {filteredProjects.length === 0 && !loading && (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">No projects found</h3>
+              <h3 className="text-xl font-medium text-gray-900 mb-2">
+                {projects.length === 0 ? 'No projects available' : 'No projects found'}
+              </h3>
               <p className="text-gray-600">
-                No projects match the selected filter. Try selecting a different category.
+                {projects.length === 0 
+                  ? 'Projects will appear here once they are added to the portfolio.'
+                  : 'No projects match the selected filter. Try selecting a different category.'
+                }
               </p>
+              {projects.length === 0 && (
+                <Link
+                  to="/contact"
+                  className="inline-block mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Get In Touch
+                </Link>
+              )}
             </div>
           )}
 
           {/* Call to Action */}
-          <div className="mt-16 text-center bg-white rounded-lg shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Have a project in mind?
-            </h2>
-            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              I'm always excited to work on new and challenging projects. 
-              Let's discuss how we can bring your ideas to life.
-            </p>
-            <Link
-              to="/contact"
-              className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Get In Touch
-            </Link>
-          </div>
+          {projects.length > 0 && (
+            <div className="mt-16 text-center bg-white rounded-lg shadow-lg p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Have a project in mind?
+              </h2>
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                I'm always excited to work on new and challenging projects. 
+                Let's discuss how we can bring your ideas to life.
+              </p>
+              <Link
+                to="/contact"
+                className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Get In Touch
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </>

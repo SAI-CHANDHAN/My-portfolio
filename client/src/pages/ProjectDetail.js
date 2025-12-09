@@ -15,7 +15,6 @@ const ProjectDetail = () => {
 
   useEffect(() => {
     fetchProject();
-    // Track project view
     trackProjectView();
   }, [id]);
 
@@ -33,7 +32,8 @@ const ProjectDetail = () => {
       const projectData = await projectRes.json();
       const relatedData = await relatedRes.json();
 
-      setProject(projectData.project);
+      // Fixed: Remove .project since API returns project directly
+      setProject(projectData);
       setRelatedProjects(relatedData.projects || []);
     } catch (error) {
       setError(error.message);
@@ -62,15 +62,19 @@ const ProjectDetail = () => {
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => 
-      prev === project.images.length - 1 ? 0 : prev + 1
-    );
+    if (project && project.images && project.images.length > 0) {
+      setCurrentImageIndex((prev) => 
+        prev === project.images.length - 1 ? 0 : prev + 1
+      );
+    }
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? project.images.length - 1 : prev - 1
-    );
+    if (project && project.images && project.images.length > 0) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? project.images.length - 1 : prev - 1
+      );
+    }
   };
 
   if (loading) return <LoadingSpinner />;
@@ -80,6 +84,19 @@ const ProjectDetail = () => {
       <div className="error-page">
         <h1>Project Not Found</h1>
         <p>{error}</p>
+        <Link to="/projects" className="btn btn-primary">
+          View All Projects
+        </Link>
+      </div>
+    );
+  }
+
+  // Add null check to ensure project exists before rendering
+  if (!project) {
+    return (
+      <div className="error-page">
+        <h1>Project Not Found</h1>
+        <p>The requested project could not be loaded.</p>
         <Link to="/projects" className="btn btn-primary">
           View All Projects
         </Link>

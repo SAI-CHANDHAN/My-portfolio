@@ -1,6 +1,6 @@
-// src/components/home/FeaturedProjects.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import apiService from '../../utils/api';
 import './FeaturedProjects.css';
 
 const FeaturedProjects = () => {
@@ -13,11 +13,12 @@ const FeaturedProjects = () => {
 
   const fetchFeaturedProjects = async () => {
     try {
-      const response = await fetch('/api/projects?featured=true&limit=3');
-      const data = await response.json();
-      setProjects(data.projects || []);
+      // Use the dedicated featured projects endpoint
+      const data = await apiService.request('/projects/featured');
+      setProjects(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching featured projects:', error);
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -62,6 +63,9 @@ const FeaturedProjects = () => {
                 <img 
                   src={project.images?.[0] || '/api/placeholder/400/300'} 
                   alt={project.title}
+                  onError={(e) => {
+                    e.target.src = '/api/placeholder/400/300';
+                  }}
                 />
                 <div className="project-overlay">
                   <div className="project-links">
@@ -98,7 +102,7 @@ const FeaturedProjects = () => {
               
               <div className="project-content">
                 <h3 className="project-title">{project.title}</h3>
-                <p className="project-description">{project.description}</p>
+                <p className="project-description">{project.shortDescription || project.description}</p>
                 
                 <div className="project-technologies">
                   {project.technologies?.slice(0, 4).map((tech, i) => (
@@ -119,12 +123,26 @@ const FeaturedProjects = () => {
             </div>
           ))}
         </div>
+
+        {projects.length === 0 && (
+          <div className="no-projects">
+            <div className="no-projects-content">
+              <h3>No Featured Projects Yet</h3>
+              <p>Featured projects will appear here once they are added to the portfolio.</p>
+              <Link to="/projects" className="btn btn-primary">
+                View All Projects
+              </Link>
+            </div>
+          </div>
+        )}
         
-        <div className="view-all-projects">
-          <Link to="/projects" className="btn btn-outline">
-            View All Projects
-          </Link>
-        </div>
+        {projects.length > 0 && (
+          <div className="view-all-projects">
+            <Link to="/projects" className="btn btn-outline">
+              View All Projects
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

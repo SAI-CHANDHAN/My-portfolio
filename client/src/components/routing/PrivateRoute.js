@@ -1,17 +1,16 @@
-// src/components/routing/PrivateRoute.js
-import React, { useContext } from 'react';
+import React from 'react';
+import { useAuth } from '../../context/AuthContext'; // Use useAuth instead of AuthContext
 import { Navigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import LoadingSpinner from '../common/LoadingSpinner';
 
 const PrivateRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user } = useAuth(); // Destructure user from useAuth()
 
-  if (loading) {
-    return <LoadingSpinner />;
+  if (!user) {
+    // Redirect to login if no user
+    return <Navigate to="/login" replace />;
   }
 
-  return user ? children : <Navigate to="/admin/login" replace />;
+  return children;
 };
 
 export default PrivateRoute;

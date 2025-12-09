@@ -24,10 +24,15 @@ import NotFound from './pages/NotFound';
 // Admin Pages
 import Admin from './pages/admin/Admin';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminProjects from './pages/admin/Projects';
+import AdminBlog from './pages/admin/Blog';
+import ProjectForm from './pages/admin/ProjectForm';
+import BlogForm from './pages/admin/BlogForm';
+import AdminSkills from './pages/admin/Skills';
+import AdminContact from './pages/admin/Contact';
 
 // Routing Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import PrivateRoute from './components/routing/PrivateRoute';
 
 // Styles
 import './App.css';
@@ -65,29 +70,21 @@ function App() {
                       <ProtectedRoute>
                         <Admin />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/dashboard" 
-                    element={
-                      <ProtectedRoute>
-                        <AdminDashboard />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  
-                  {/* Private Routes (Alternative protected route implementation) */}
-                  <Route 
-                    path="/admin/*" 
-                    element={
-                      <PrivateRoute>
-                        <Routes>
-                          <Route path="/" element={<Admin />} />
-                          <Route path="/dashboard" element={<AdminDashboard />} />
-                        </Routes>
-                      </PrivateRoute>
-                    } 
-                  />
+                    }
+                  >
+                    {/* Nested Admin Routes */}
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="projects" element={<AdminProjects />} />
+                    <Route path="projects/new" element={<ProjectForm />} />
+                    <Route path="projects/:id" element={<ProjectForm />} />
+                    <Route path="blog" element={<AdminBlog />} />
+                    <Route path="blog/new" element={<BlogForm />} />
+                    <Route path="blog/:id" element={<BlogForm />} />
+                    <Route path="skills" element={<AdminSkills />} />
+                    <Route path="contacts" element={<AdminContact />} />
+                    <Route path="contact" element={<AdminContact />} />
+                  </Route>
                   
                   {/* 404 Route */}
                   <Route path="*" element={<NotFound />} />

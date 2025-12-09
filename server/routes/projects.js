@@ -13,7 +13,7 @@ router.get('/', validatePagination, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     
-    const { category, featured, search } = req.query;
+    const { category, featured, search, exclude } = req.query;
     
     // Build query
     let query = { isPublished: true };
@@ -28,6 +28,11 @@ router.get('/', validatePagination, async (req, res) => {
     
     if (search) {
       query.$text = { $search: search };
+    }
+
+    // Add exclude functionality for related projects
+    if (exclude) {
+      query._id = { $ne: exclude };
     }
 
     const projects = await Project.find(query)
@@ -87,6 +92,7 @@ router.get('/:identifier', async (req, res) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
+    // Return project directly (matches frontend expectation after fix)
     res.json(project);
   } catch (error) {
     console.error(error);
