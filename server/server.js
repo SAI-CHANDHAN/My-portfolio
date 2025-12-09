@@ -59,9 +59,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve client in production
-const fs = require('fs');
-
 // Serve client in production only if client/build exists
 const clientBuildPath = path.join(__dirname, '../client/build');
 if (fs.existsSync(clientBuildPath)) {
