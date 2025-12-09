@@ -8,11 +8,23 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// server/server.js — replace the cors section with this
+const fs = require('fs');
+
+const allowedOrigin = process.env.CLIENT_URL || 'http://localhost:3000';
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: (origin, cb) => {
+    // allow requests with no origin (curl, mobile, server-to-server)
+    if (!origin) return cb(null, true);
+    // allow if matches configured CLIENT_URL
+    if (origin === allowedOrigin) return cb(null, true);
+    // otherwise block
+    cb(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
