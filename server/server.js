@@ -48,17 +48,22 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve client in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+const fs = require('fs');
+
+// Serve client in production only if client/build exists
+const clientBuildPath = path.join(__dirname, '../client/build');
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
 } else {
-  // Development route
+  // If client build doesn't exist, keep a simple root route for sanity
   app.get('/', (req, res) => {
-    res.json({ message: 'MERN Portfolio API is running!' });
+    res.json({ message: 'MERN Portfolio API is running (no client served here).' });
   });
 }
+
 
 // Global error handler
 app.use((err, req, res, next) => {
